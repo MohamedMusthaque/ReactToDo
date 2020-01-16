@@ -6,13 +6,15 @@ class App extends Component {
   state = {
     //Array of sample todos
     todos: [
-      {edit:false, id:1, title:"Buy Vegitables", description:"Vegitables for this week", created_date:"12-01-2020"},
-      {edit:false, id:2, title:"Shopping", description:"Monthly home goods", created_date:"14-01-2020"}
+      { edit:false, id:1, title:"Buy Vegitables", description:"Vegitables for this week", created_date:"12-01-2020" , deleted:false },
+      { edit:false, id:2, title:"Shopping", description:"Monthly home goods", created_date:"14-01-2020", deleted:false }
     ]
   }
 
   //Delete todo
   deleteTodo = (id) => {
+    console.log(id); //deleted item's id
+
     const todos = this.state.todos.filter(todo => {
       return todo.id !== id
     });
@@ -23,11 +25,15 @@ class App extends Component {
 
   //Add todo
   addTodo = (todo) => {
+
     todo.id = Math.random();
     let todos = [...this.state.todos, todo];
     this.setState({
       todos
     });
+
+    //Save to local storage
+    localStorage.setItem("Todos",JSON.stringify(todos))
   }
 
   //Edit todo

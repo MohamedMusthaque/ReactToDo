@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
 class CreateTodo extends Component {
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.state = {
             title:'',
             description: '',
@@ -59,13 +59,11 @@ class CreateTodo extends Component {
                             <input type="date" className="datepicker" onChange={this.handleDateChange} value={this.state.created_date} placeholder="Select the date" required />  
                         </div>
                         <div className="input-field col s7">
-                        <input type="text" onChange={this.handleDescriptionChange} placeholder="Enter the description" value={this.state.description}/>      
+                            <input type="text" onChange={this.handleDescriptionChange} placeholder="Enter the description" value={this.state.description}/>        
+                            <button type="submit" className="btn blue right" name="action" onClick={ this.handleChange }>Submit
+                            </button>
                         </div>
-                        
                     </div>
-                    <button type="submit" className="btn waves-effect waves-light" name="action" onClick={ this.handleChange }>Submit
-                        <i className="material-icons right"></i>
-                    </button>
                 </form>
             </div>
         )
