@@ -6,7 +6,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      title: "ToDo's ",
+      title: 'Todos Daily',
       act: 0,
       index: '',
       datas: [],
@@ -16,23 +16,42 @@ class App extends Component {
 
   componentDidMount() {
     this.refs.name.focus();
-
-      //Get data from local storage
-      try {
-        const todoos = localStorage.getItem("Todos");
-        if (todoos === null) return undefined;
-        this.setState({
-          datas: JSON.parse(todoos)
-        });
-      } catch (e) {
-        console.log(e);
-        return undefined;
-      }
-    
+    this.GetDataTodos();
+    this.GetDataDeletedTodos();
   }
 
-  fSubmit = (e) => {
+  //Get data from local storage of todos
+  GetDataTodos = () =>{
+    try {
+      const todoos = localStorage.getItem("Todos");
+      if (todoos === null) return undefined;
+      this.setState({
+        datas: JSON.parse(todoos)
+      });
+    } catch (e) {
+      console.log(e);
+      return undefined;
+    }
+  }
+
+  //Get data from local storage of deleted todos
+  GetDataDeletedTodos = () =>{
+    try {
+      const deletedtodoos = localStorage.getItem("RemovedTodos");
+      if (deletedtodoos === null) return undefined;
+      this.setState({
+        removed: JSON.parse(deletedtodoos)
+      });
+    } catch (e) {
+      console.log(e);
+      return undefined;
+    }
+  }
+
+  //Create a new todo
+  CreateTodo = (e) => {
     e.preventDefault();
+    console.log('try');
 
     let datas = this.state.datas;
     let name = this.refs.name.value;
@@ -44,15 +63,30 @@ class App extends Component {
         name, date, description
       }
 
-       datas.forEach(item => {
+      //Check title duplication
+      datas.forEach(item => {
         if(item.name === name){
-          console.log('Item duplicate here ', item.name, name );
-          alert('Duplocate')
-          return true
-        }else{
-          datas.push(data);
-        }
+          console.log('Item duplicate here ', name );
+          alert('Duplicate title')
+          return item 
+        } 
       });
+
+        datas.push(data);
+      
+      
+      // if(name.match("^[a-zA-Z ]*$") !== null){
+      //       datas.push(data);
+      // }
+      
+      // if(!name || !date){
+      //   alert("Fields or Field can't be empty.!");
+      // }
+      // else{
+      //   if(name.match("^[a-zA-Z ]*$") != null){
+      //     datas.push(data);
+      //   }
+      // }
       
     } else {                      //update
       let index = this.state.index;
@@ -73,12 +107,12 @@ class App extends Component {
     localStorage.setItem("Todos", JSON.stringify(datas))
   }
 
-
-  fRemove = (i) => {
+  //Remove the todo from the list
+  RemoveTodo = (i) => {
     let datas = this.state.datas;
+    let removedList = this.state.removed;
     let removeitem = datas.splice(i, 1);
-    console.log('Removed ', removeitem); 
-    let removedList = this.state.removed; 
+    console.log('Removed ', removeitem[0].name);
     removedList.push(removeitem);
     console.log('Removed ', removedList); 
     
@@ -91,10 +125,12 @@ class App extends Component {
     this.refs.name.focus();
 
     //Save to local storage
-    localStorage.setItem("Todos", JSON.stringify(datas))
+    localStorage.setItem("Todos", JSON.stringify(datas));
+    localStorage.setItem("RemovedTodos", JSON.stringify(removedList));
   }
 
-  fEdit = (i) => {
+  //Edit the selected todo from the list
+  EditTodo = (i) => {
     let data = this.state.datas[i];
     this.refs.name.value = data.name;
     this.refs.date.value = data.date;
@@ -109,6 +145,7 @@ class App extends Component {
 
   render() {
     let datas = this.state.datas;
+    let removed = this.state.removed;
     return (
       <div className="App">
         <h2>{this.state.title}</h2>
@@ -116,14 +153,26 @@ class App extends Component {
           <input type="text" ref="name" placeholder="Title" className="formField" required />
           <input type="text" ref="description" placeholder="Description" className="formField" />
           <input type="date" ref="date" className="formField" required />
-          <button onClick={(e) => this.fSubmit(e)} className="myButton">submit </button>
+          <button type="submit" onClick={(e) => this.CreateTodo(e)} className="myButton">submit </button>
         </form>
-        <pre className="container">
+
+        {/* Read all the todos */}
+        <pre className="collection-item">
           {datas.map((data, i) =>
-            <li key={i} className="myList">
+            <li key={i}>
               {i + 1}. {data.name}, {data.date}, {data.description}
-              <button onClick={() => this.fRemove(i)} className="myListButton">remove </button>
-              <button onClick={() => this.fEdit(i)} className="myListButton">edit </button>
+              <button onClick={() => this.RemoveTodo(i)} className="red center">remove </button>
+              <button onClick={() => this.EditTodo(i)} className="green denter">edit </button>
+            </li>
+          )}
+        </pre>
+
+        {/* Read the deleted todos */}
+        <pre className="collection-item">
+          Deleted todos
+          {removed.map((ele, j) =>
+            <li key={j} className="myList">
+              {j + 1}. {ele[0].name}, {ele[0].date}, {ele[0].description}
             </li>
           )}
         </pre>
@@ -131,6 +180,5 @@ class App extends Component {
     );
   }
 }
-
 
 export default App;
