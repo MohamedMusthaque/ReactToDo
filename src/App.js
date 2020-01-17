@@ -1,111 +1,136 @@
 import React, { Component } from 'react';
-import Todos from './components/Todos';
-import CreateTodo from './components/CreateTodo'
+import './App.css';
 
 class App extends Component {
-  state = {
-    //Array of sample todos
-    todos: [
-      { edit:false, id:1, title:"Buy Vegitables", description:"Vegitables for this week", created_date:"12-01-2020" , deleted:false },
-      { edit:false, id:2, title:"Shopping", description:"Monthly home goods", created_date:"14-01-2020", deleted:false }
-    ]
-  }
 
-  componentDidMount(){
-    this.getTodo();
-  }
-
-  //Delete todo
-  deleteTodo = (id) => {
-    console.log(id); //deleted item's id
-
-    const todos = this.state.todos.filter(todo => {
-      return todo.id !== id
-    });
-    this.setState({
-      todos //todos: todos - no need to use since key and value having the same name
-    });
-
-    //Save to local storage
-    localStorage.setItem("Todos",JSON.stringify(todos))
-  }
-
-  //Add todo
-  addTodo = (todo) => {
-    
-    // this.state.todos.forEach(element => {
-    //   if (element.title === todo['title']){  
-    //     alert( "Title cannot be duplicate.!" );
-    //     return;
-    //   }
-    //   else {
-        
-    //     return;
-    //   }
-    // })
-
-    todo.id = Math.random();
-        let todos = [...this.state.todos, todo];
-        this.setState({
-          todos
-        }); 
-        
-        //Save to local storage
-        localStorage.setItem("Todos",JSON.stringify(todos))
-  }
-
-  //Get data from local storage
-  getTodo = () => {
-    try {
-      const todoos = localStorage.getItem("Todos");
-      if( todoos === null) return undefined;
-      this.setState({
-        todos : JSON.parse(todoos)
-      });
-    }catch(e){
-      console.log(e);
-      return undefined;
+  constructor(props) {
+    super(props);
+    this.state = {
+      title: "ToDo's ",
+      act: 0,
+      index: '',
+      datas: [],
+      removed: []
     }
   }
 
-  //Edit todo
-  editTodo = (title) => {
-    console.log(title); //selected item's id
+  componentDidMount() {
+    this.refs.name.focus();
 
-    const todos = this.state.todos.filter(todo => {
-      if(todo.title !== title){
-        alert("duplicate");
+      //Get data from local storage
+      try {
+        const todoos = localStorage.getItem("Todos");
+        if (todoos === null) return undefined;
+        this.setState({
+          datas: JSON.parse(todoos)
+        });
+      } catch (e) {
+        console.log(e);
+        return undefined;
       }
-      return todo.title 
-    });
-    this.setState({
-      todos
-    });
+    
   }
 
-  // fEdit = (i) => {
-  //   let data = this.state.datas[i];
-  //   this.refs.name.value = data.name;
-  //   this.refs.address.value = data.address;
+  fSubmit = (e) => {
+    e.preventDefault();
 
-  //   this.setState({
-  //     act: 1,
-  //     index: i
-  //   });
+    let datas = this.state.datas;
+    let name = this.refs.name.value;
+    let description = this.refs.description.value;
+    let date = this.refs.date.value;
 
-  //   this.refs.name.focus();
-  // }  
+    if (this.state.act === 0) {   //new
+      let data = {
+        name, date, description
+      }
 
+       datas.forEach(item => {
+        if(item.name === name){
+          console.log('Item duplicate here ', item.name, name );
+          alert('Duplocate')
+          return true
+        }else{
+          datas.push(data);
+        }
+      });
+      
+    } else {                      //update
+      let index = this.state.index;
+      datas[index].name = name;
+      datas[index].date = date;
+      datas[index].description = description;
+    }
+
+    this.setState({
+      datas: datas,
+      act: 0
+    });
+
+    this.refs.myForm.reset();
+    this.refs.name.focus();
+
+    //Save to local storage
+    localStorage.setItem("Todos", JSON.stringify(datas))
+  }
+
+
+  fRemove = (i) => {
+    let datas = this.state.datas;
+    let removeitem = datas.splice(i, 1);
+    console.log('Removed ', removeitem); 
+    let removedList = this.state.removed; 
+    removedList.push(removeitem);
+    console.log('Removed ', removedList); 
+    
+    this.setState({
+      datas: datas,
+      removed: removedList
+    });
+
+    this.refs.myForm.reset();
+    this.refs.name.focus();
+
+    //Save to local storage
+    localStorage.setItem("Todos", JSON.stringify(datas))
+  }
+
+  fEdit = (i) => {
+    let data = this.state.datas[i];
+    this.refs.name.value = data.name;
+    this.refs.date.value = data.date;
+    this.refs.description.value = data.description;
+    this.setState({
+      act: 1,
+      index: i
+    });
+
+    this.refs.name.focus();
+  }
 
   render() {
+    let datas = this.state.datas;
     return (
-      <div className="todo-app container">
-        <h1 className="center blue-text">Todo's</h1>
-        <CreateTodo addTodo={this.addTodo} saveTodo={this.saveTodo}/>
-        <Todos todos={this.state.todos} deleteTodo={this.deleteTodo} />
+      <div className="App">
+        <h2>{this.state.title}</h2>
+        <form ref="myForm" className="myForm">
+          <input type="text" ref="name" placeholder="Title" className="formField" required />
+          <input type="text" ref="description" placeholder="Description" className="formField" />
+          <input type="date" ref="date" className="formField" required />
+          <button onClick={(e) => this.fSubmit(e)} className="myButton">submit </button>
+        </form>
+        <pre className="container">
+          {datas.map((data, i) =>
+            <li key={i} className="myList">
+              {i + 1}. {data.name}, {data.date}, {data.description}
+              <button onClick={() => this.fRemove(i)} className="myListButton">remove </button>
+              <button onClick={() => this.fEdit(i)} className="myListButton">edit </button>
+            </li>
+          )}
+        </pre>
       </div>
     );
   }
 }
+
 
 export default App;
