@@ -12,6 +12,7 @@ class App extends Component {
       datas: [],
       removed: []
     }
+    this.form = React.createRef();
   }
 
   componentDidMount() {
@@ -70,10 +71,12 @@ class App extends Component {
           alert('Duplicate title')
           return item 
         } 
+        else{
+          if(item.name !== name){
+          datas.push(data);
+          }
+        }
       });
-
-        datas.push(data);
-      
       
       // if(name.match("^[a-zA-Z ]*$") !== null){
       //       datas.push(data);
